@@ -170,15 +170,7 @@ func (c *cloudFrontClient) normalizeInvalidationPaths(
 			maxlevels = levels
 		}
 
-		if strings.HasSuffix(p, "index.html") {
-			dir := path.Dir(p)
-			if !strings.HasSuffix(dir, "/") {
-				dir += "/"
-			}
-			normalized = append(normalized, dir)
-		} else {
-			normalized = append(normalized, p)
-		}
+		normalized = append(normalized, p)
 	}
 
 	normalized = uniqueStrings(normalized)

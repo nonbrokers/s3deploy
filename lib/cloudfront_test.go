@@ -20,15 +20,15 @@ func TestReduceInvalidationPaths(t *testing.T) {
 
 	var client *cloudFrontClient
 
-	assert.Equal([]string{"/root/"}, client.normalizeInvalidationPaths("root", 5, false, "/root/index.html"))
-	assert.Equal([]string{"/"}, client.normalizeInvalidationPaths("", 5, false, "/index.html"))
+	assert.Equal([]string{"/root/index.html"}, client.normalizeInvalidationPaths("root", 5, false, "/root/index.html"))
+	assert.Equal([]string{"/index.html"}, client.normalizeInvalidationPaths("", 5, false, "/index.html"))
 	assert.Equal([]string{"/*"}, client.normalizeInvalidationPaths("", 5, true, "/a", "/b"))
 	assert.Equal([]string{"/root/*"}, client.normalizeInvalidationPaths("root", 5, true, "/a", "/b"))
 
 	rootPlusMany := append([]string{"/index.html", "/styles.css"}, createFiles("css", false, 20)...)
 	normalized := client.normalizeInvalidationPaths("", 5, false, rootPlusMany...)
 	assert.Equal(3, len(normalized))
-	assert.Equal([]string{"/", "/css/*", "/styles.css"}, normalized)
+	assert.Equal([]string{"/css/*", "/index.html", "/styles.css"}, normalized)
 
 	rootPlusManyInDifferentFolders := append([]string{"/index.html", "/styles.css"}, createFiles("css", true, 20)...)
 	assert.Equal([]string{"/*"}, client.normalizeInvalidationPaths("", 5, false, rootPlusManyInDifferentFolders...))
@@ -43,7 +43,7 @@ func TestReduceInvalidationPaths(t *testing.T) {
 	// avoid situations where many changes in some HTML template triggers update in /images and similar
 	normalized = client.normalizeInvalidationPaths("", 5, false, rootPlusManyInDifferentFoldersNested...)
 	assert.Equal(4, len(normalized))
-	assert.Equal([]string{"/", "/about/*", "/blog/*", "/styles.css"}, normalized)
+	assert.Equal([]string{"/about/*", "/blog/*", "/index.html", "/styles.css"}, normalized)
 
 	changes := []string{"/hugoscss/categories/index.html", "/hugoscss/index.html", "/hugoscss/tags/index.html", "/hugoscss/post/index.html", "/hugoscss/post/hello-scss/index.html", "/hugoscss/styles/main.min.36816b22057425f8a5f66b73918446b0cd793c0c6125406c285948f507599d1e.css"}
 	normalized = client.normalizeInvalidationPaths("/hugoscss", 3, false, changes...)
